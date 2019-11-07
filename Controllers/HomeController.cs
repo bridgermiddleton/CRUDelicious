@@ -25,9 +25,14 @@ namespace CRUDelicious.Controllers
         [HttpPost]
         public IActionResult AddDish(Dishes dish)
         {
-            dbContext.Add(dish);
-            dbContext.SaveChanges();
-            return RedirectToAction("WelcomePage");
+            if (ModelState.IsValid)
+            {
+                dbContext.Add(dish);
+                dbContext.SaveChanges();
+                return RedirectToAction("WelcomePage");
+            }
+            return View("AddDishPage");
+            
         }
         [HttpGet("new")]
         public IActionResult AddDishPage()
@@ -51,9 +56,14 @@ namespace CRUDelicious.Controllers
         [HttpPost]
         public IActionResult EditDish(Dishes thedish)
         {
-            dbContext.Dishes.Update(thedish);
-            dbContext.SaveChanges();
-            return RedirectToAction("WelcomePage");
+            if (ModelState.IsValid)
+            {
+                dbContext.Dishes.Update(thedish);
+                dbContext.SaveChanges();
+                return RedirectToAction("WelcomePage");
+            }
+            return View("EditPage");
+            
             
             
             
