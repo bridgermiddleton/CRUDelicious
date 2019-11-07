@@ -1,0 +1,17 @@
+@model Dishes;
+<div class="container">
+    <a href="/">Home</a>
+    <h1 class="display-2 text-center">@Model.Name</h1>
+    <p class="text-center">@Model.Chef</p>
+    <hr>
+    <p class="text-center">@Model.Description</p>
+    <p><strong>Calories:</strong> @Model.Calories</p>
+    <p><strong>Tastiness:</strong> @Model.Tastiness</p>
+    <div class="btn-group align-top">
+        <form class="form-group" action="/ProcessDelete/@Model.DishId" method="POST">
+            <button class="btn btn-danger" type="submit">Delete</button>
+        </form>
+    </div>
+    <a class="btn btn-info" href="/edit/@Model.DishId">Edit</a>
+
+</div>

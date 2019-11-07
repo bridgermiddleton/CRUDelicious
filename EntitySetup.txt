@@ -1,0 +1,148 @@
+1. Make your directory, cd into it, and run this: dotnet new mvc --no-https
+
+2. Go to the start up file, and delete all the Cookies stuff.  Do this in the Layout.cshtml as well.
+
+3. Now to import the Entity Framework.  Run this in Terminal:  dotnet add package Pomelo.EntityFrameworkCore.MySql -v 2.2.0
+
+4. Create a file in your Models folder.  Its name should end with "Context".  This is what it should look like:
+
+using Microsoft.EntityFrameworkCore;
+ 
+namespace YourNamespace.Models
+{
+    public class MyContext : DbContext
+    {
+        // base() calls the parent class' constructor passing the "options" parameter along
+        public MyContext(DbContextOptions options) : base(options) { }
+    }
+}
+
+
+5. Now, go to the Startup.cs file and make sure it contains the following:
+
+    using MyProject.Models;
+    using Microsoft.EntityFrameworkCore;
+    public class Startup
+    {
+        // Other startup code
+        public void ConfigureServices(IServiceCollection services)
+        {
+            string mySqlConnection = "server=localhost;userid=root;password=root;port=3306;database=mydb;SslMode=None";
+            services.AddDbContext<MyContext>(options => options.UseMySql(mySqlConnection));
+            // Add other services
+        }
+        // Other startup code
+    }   
+
+6. Now, make a model!  Here's an example with some stuff that should be included:
+
+    using System.ComponentModel.DataAnnotations;
+    using System;
+    namespace MyProject.Models
+    {
+        public class User
+        {
+            // auto-implemented properties need to match the columns in your table
+            // the [Key] attribute is used to mark the Model property being used for your table's Primary Keycopy
+            [Key]
+            public int UserId { get; set; }
+            // MySQL VARCHAR and TEXT types can be represeted by a string
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public string Email { get; set; }
+            public string Password { get; set; }
+            // The MySQL DATETIME type can be represented by a DateTime
+            public DateTime CreatedAt {get;set;} = DateTime.Now;
+            public DateTime UpdatedAt {get;set;} = DateTime.Now;
+        }
+    }
+
+7. Now, set-up your DbSets.  Go to the Context file you made earlier and use this as template based off the previous example:
+
+    using Microsoft.EntityFrameworkCore; 
+    namespace MyProject.Models
+    {
+        public class MyContext : DbContext
+        {
+            public MyContext(DbContextOptions options) : base(options) { }
+            
+            // "users" table is represented by this DbSet "Users"
+            public DbSet<User> Users {get;set;}
+        }
+    }
+    
+
+8. Now, the Dependency Injection to our controller. Here's an example:
+
+using Microsoft.EntityFrameworkCore;
+using YourNamespace.Models;
+using System.Linq;
+// Other using statements
+namespace MyProject.Controllers
+{
+    public class HomeController : Controller
+    {
+        private MyContext dbContext;
+     
+        // here we can "inject" our context service into the constructor
+        public HomeController(MyContext context)
+        {
+            dbContext = context;
+        }
+     
+        [HttpGet]
+        [Route("")]
+        public IActionResult Index()
+        {
+            List<User> AllUsers = dbContext.Users.ToList();
+            
+            return View();
+        }
+    }
+ }
+
+9. To secure our connection string, go into appsettings.json and put this in it:
+
+{
+    "DBInfo":
+    {
+        "Name": "MySQLconnect",
+        "ConnectionString": "server=localhost;userid=root;password=root;port=3306;database=mydb;SslMode=None"
+    }
+}
+
+
+10. Now go to your Startup file and make sure it looks similar to this:
+
+// other using statements
+using Microsoft.Extensions.Configuration;
+public class Startup
+{
+    // This public getter will be how you access the data from appsettings.json
+    // To access the connection string itself, you would use the following:
+    // Configuration["DBInfo:ConnectionString"]
+    public IConfiguration Configuration {get;}
+    
+    // Here we will "inject" the default IConfiguration service, which will bind to appsettings.json by default
+    // and then assign it to the Configuration property.  This happens at the startup of our application.
+    public Startup(IConfiguration configuration)
+    {
+    	Configuration = configuration;
+    }
+    
+    // Now we may use the connection string itself, bound to Configuration, to pass the required connection
+    // credentials to MySQL
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddDbContext<MyContext>(options => options.UseMySql(Configuration["DBInfo:ConnectionString"]));
+        // Add other services
+    }
+}
+
+11. Now, to migrate!  Once you have all your Models ready, migrate with this command:
+
+dotnet ef migrations add YourMigrationName
+
+12. Once the migration file is created, all that's left is to apply it to the database!:
+
+dotnet ef database update

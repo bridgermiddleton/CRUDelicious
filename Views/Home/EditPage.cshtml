@@ -1,0 +1,35 @@
+@model Dishes;
+
+<div class="container">
+    <a href="/">Home</a>
+    <h2 class="text-center">Edit @Model.Name</h2>
+    <form asp-action="EditDish" asp-controller="Home" method="POST">
+        <div class="row">
+            <div class="col form-group">
+                <input type="hidden" asp-for="DishId">
+                <input type="hidden" asp-for="CreatedAt">
+                <span asp-validation-for="Chef"></span>
+                Chef's Name<input class="form-control" asp-for="Chef">
+                <span asp-validation-for="Name"></span>
+                Name of Dish<input class="form-control" asp-for="Name">
+                <span asp-validation-for="Calories"></span>
+                # of Calories<input class="form-control" asp-for="Calories">
+            </div>
+            <div class="col form-group">
+                <span asp-validation-for="Tastiness"></span>
+                Tastiness<select class="form-control" asp-for="Tastiness">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+            <div class="col form-group">
+                <span asp-validation-for="Description"></span>
+                Description<textarea class="form-control" asp-for="Description"></textarea>
+                <button style="margin-top: 20px;" class="btn btn-success" type="submit">Edit Dish</button>
+            </div>
+        </div>        
+    </form>
+</div>
